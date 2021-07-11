@@ -24,6 +24,7 @@ type Modifiers struct {
 	CTRL bool
 	ALT bool
 	SHIFT bool
+	HasModifiers bool
 }
 
 var (
@@ -38,40 +39,49 @@ func GetKey() Keys {
 	var activeKeys []int
 	var keyState uint16
 
-	for i := 0; i < 256; i++ {
+	keys := Keys{Empty: true}
 
-		keyState = w32.GetAsyncKeyState(i)
+	if w32.GetAsyncKeyState(w32.VK_SHIFT)&(1<<15) != 0 {
+		keys.Modifiers.HasModifiers = true
+		keys.Modifiers.SHIFT = true
+	}
 
-		isPressed := keyState&(1<<15) != 0
-		isChar := !(i < 0x2F) && (i < 160 || i > 165) && (i < 91 || i > 93)
+	if w32.GetAsyncKeyState(w32.VK_CONTROL)&(1<<15) != 0 {
+		keys.Modifiers.HasModifiers = true
+		keys.Modifiers.CTRL = true
+	}
 
-		if isPressed && isChar {
-			activeKeys = append(activeKeys, i)
+	if w32.GetAsyncKeyState(w32.VK_MENU)&(1<<15) != 0 {
+		keys.Modifiers.HasModifiers = true
+		keys.Modifiers.ALT = true
+	}
+
+	if keys.Modifiers.HasModifiers {
+		for i := 0; i < 256; i++ {
+
+			keyState = w32.GetAsyncKeyState(i)
+
+			isPressed := keyState&(1<<15) != 0
+			isChar := !(i < 0x2F) && (i < 160 || i > 165) && (i < 91 || i > 93)
+
+			if isPressed && isChar {
+				activeKeys = append(activeKeys, i)
+			}
+		}
+
+		if len(activeKeys) > 0 {
+			if keys.Modifiers.HasModifiers {	
+				keys.Empty = false
+				for _, keyCode := range activeKeys {
+					keys.Keys = append(keys.Keys, ParseKeycode(keyCode))
+				}
+			}
+
+			return keys 
 		}
 	}
 
-	if len(activeKeys) > 0 {
-		keys := Keys{Empty: false}
-
-		if w32.GetAsyncKeyState(w32.VK_SHIFT)&(1<<15) != 0 {
-			keys.Modifiers.SHIFT = true
-		}
-
-		if w32.GetAsyncKeyState(w32.VK_CONTROL)&(1<<15) != 0 {
-			keys.Modifiers.CTRL = true
-		}
-
-		if w32.GetAsyncKeyState(w32.VK_MENU)&(1<<15) != 0 {
-			keys.Modifiers.ALT = true
-		}
-
-		for _, keyCode := range activeKeys {
-			keys.Keys = append(keys.Keys, ParseKeycode(keyCode))
-		}
-		return keys 
-	}
-
-	return Keys{Empty: true}
+	return keys
 }
 
 
@@ -101,6 +111,5 @@ func ParseKeycode(keyCode int) Key {
 		uintptr(kbLayout))
 	
 	key.Rune, _ = utf8.DecodeRuneInString(syscall.UTF16ToString(outBuf))
-
 	return key
 }
