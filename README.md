@@ -1,6 +1,6 @@
 # windows-shortcuts-golang
 
-This project is a test for using the Win32 api in Golang. It's not intended to be used in production. 
+This project is a test for using the Win32 api in Golang to get the currently pressed keys, and detect if there is a combination of keystrokes associated to a command (ctrl, shift or alt). It's not intended to be used in production. 
 
 To clone this project. 
 
