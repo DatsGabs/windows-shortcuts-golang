@@ -70,13 +70,12 @@ func GetKey() Keys {
 		}
 
 		if len(activeKeys) > 0 {
-			if keys.Modifiers.HasModifiers {	
-				keys.Empty = false
-				for _, keyCode := range activeKeys {
-					keys.Keys = append(keys.Keys, ParseKeycode(keyCode))
-				}
-			}
 
+			keys.Empty = false
+			for _, keyCode := range activeKeys {
+				keys.Keys = append(keys.Keys, ParseKeycode(keyCode))
+			}
+			
 			return keys 
 		}
 	}
