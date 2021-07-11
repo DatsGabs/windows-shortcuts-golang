@@ -14,7 +14,8 @@ const (
 
 
 func main() {
-
+	// modify this to write commands to run on cmd
+	// order ctrl > shift > alt
 	commands := map[string]string {
 		"ctrl+alt+t": "wt",
 		"ctrl+alt+s": "wsl --shutdown",
